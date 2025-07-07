@@ -2,6 +2,7 @@
 #define _CONFIG_H_
 
 #include <entity.h>
+#include <state.h>
 #include <raylib.h>
 
 #include <stdbool.h>
@@ -18,6 +19,7 @@ extern bool DEBUG_DRAW;
 extern RenderTexture2D ren_tex;
 extern Font font;
 extern Camera2D cam;
+extern State state;
 
 #define CAM_SPEED 100.f
 

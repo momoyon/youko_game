@@ -90,11 +90,6 @@ void control_entity(Entity *e, Control_config cc) {
 	e->pos = Vector2Add(Vector2Scale(dir, current_speed * GetFrameTime()), e->pos);
 }
 
-static void draw_info_text(Vector2 *p, const char *text, int font_size, Color color) {
-    draw_text(GetFontDefault(), text, *p, font_size, color);
-    p->y += font_size + 2;
-}
-
 void show_entity_info(Entity *e) {
 	Vector2 p = v2(e->pos.x + e->radius*1.5, e->pos.y + e->radius*1.5);
 	DrawLineV(e->pos, p, WHITE);

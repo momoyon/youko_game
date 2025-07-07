@@ -1,11 +1,11 @@
 #include <config.h>
 
 int SCREEN_WIDTH = 1280;
-int SCREEN_HEIGHT = 720;
+int SCREEN_HEIGHT = 960;
 float SCREEN_SCALE = 0.5f;
 
-int WIDTH = 1280;
-int HEIGHT = 720;
+int WIDTH = -1;
+int HEIGHT = -1;
 
 #ifdef DEBUG
 bool DEBUG_DRAW = true;
@@ -18,6 +18,7 @@ Font font = {0};
 Camera2D cam = {
 	.zoom = 1.f,
 };
+State state = STATE_NORMAL;
 
 Entities entities = {0};
 

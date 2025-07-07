@@ -11,7 +11,6 @@
 #define STB_DS_IMPLEMENTATION
 #include <stb_ds.h>
 
-
 int main(void) {
 	ren_tex = init_window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_SCALE, "Youko Game", &WIDTH, &HEIGHT);
 	init();
@@ -37,6 +36,19 @@ int main(void) {
 		Vector2 m_world = GetScreenToWorld2D(m, cam);
 
 		// Input
+	
+		if (IsKeyPressed(KEY_TAB)) {
+			if (IsKeyDown(KEY_LEFT_SHIFT)) {
+				if (state == 0) {
+					state = STATE_COUNT-1;
+				} else {
+					state--;
+				}
+			} else {
+				state = (state + 1) % STATE_COUNT;
+			}
+		}
+
 		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
 			add_entity(m_world, EK_NONE, &arena, &temp_arena);
 		}
@@ -73,8 +85,12 @@ int main(void) {
 						show_entity_info(e);
 					}
 				}
-			// draw_text(font, "Hello Buddy", m_world, 18, WHITE);
 			EndMode2D();
+
+			if (DEBUG_DRAW) {
+				Vector2 p = v2(10, 10);
+				draw_info_text(&p, state_as_str(state), ENTITY_DEFAULT_RADIUS, YELLOW);
+			}
         EndTextureMode();
         draw_ren_tex(ren_tex, SCREEN_WIDTH, SCREEN_HEIGHT);
         EndDrawing();

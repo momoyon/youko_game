@@ -58,6 +58,7 @@ void draw_ren_tex(RenderTexture2D ren_tex, int screen_width, int screen_height);
 void draw_text_aligned(Font font, const char *text, Vector2 pos, int font_size, const Text_align_v align_v, const Text_align_h align_h, Color color);
 void draw_text_aligned_ex(Font font, const char *text, Vector2 pos, int font_size, const Text_align_v align_v, const Text_align_h align_h, float rotation, Color color);
 void draw_text(Font font, const char *text, Vector2 pos, int font_size, Color color);
+void draw_info_text(Vector2 *p, const char *text, int font_size, Color color);
 
 // Misc
 Vector2 get_mpos_scaled(float scl);
@@ -277,6 +278,12 @@ void draw_text_aligned_ex(Font font, const char *text, Vector2 pos, int font_siz
 void draw_text(Font font, const char *text, Vector2 pos, int font_size, Color color) {
 	draw_text_aligned(font, text, pos, font_size, TEXT_ALIGN_V_TOP, TEXT_ALIGN_H_LEFT, color);
 }
+
+void draw_info_text(Vector2 *p, const char *text, int font_size, Color color) {
+    draw_text(GetFontDefault(), text, *p, font_size, color);
+    p->y += font_size + 2;
+}
+
 
 // Misc
 Vector2 get_mpos_scaled(float scl) {
