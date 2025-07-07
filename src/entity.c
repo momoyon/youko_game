@@ -2,6 +2,7 @@
 #include <config.h>
 
 #include <raymath.h>
+#include <engine.h>
 
 size_t entity_id_counter = 0;
 Entity_ids free_entity_ids = {0};
@@ -35,6 +36,9 @@ Entity make_entity(Entities *entities, Vector2 pos, float radius, Entity_kind ki
 		case EK_NONE: {
 
 		} break;
+		case EK_PLAYER: {
+
+		} break;
 		case EK_COUNT:
 		default: ASSERT(false, "UNREACHABLE!");
 	}
@@ -43,15 +47,25 @@ Entity make_entity(Entities *entities, Vector2 pos, float radius, Entity_kind ki
 }
 
 void draw_entity(Entity *e) {
+	Color c = BLUE;
 	switch (e->kind) {
 		case EK_NONE: {
 
+		} break;
+		case EK_PLAYER: {
+			c = RED;
 		} break;
 		case EK_COUNT:
 		default: ASSERT(false, "UNREACHABLE!");
 	}
 
-	DrawCircleV(e->pos, e->radius, BLUE);
+	DrawCircleV(e->pos, e->radius, c);
+
+	if (DEBUG_DRAW) {
+		arena_reset(e->temp_arena);
+		const char *id_str = arena_alloc_str(*e->temp_arena, "%zu", e->id);
+		draw_text_aligned(GetFontDefault(), id_str, e->pos, e->radius, TEXT_ALIGN_V_CENTER, TEXT_ALIGN_H_CENTER, WHITE);
+	}
 }
 
 void control_entity(Entity *e, Control_config cc) {
@@ -70,9 +84,22 @@ void control_entity(Entity *e, Control_config cc) {
 	}
 	
 	float current_speed = IsKeyDown(cc.run) ? e->run_speed : e->speed;
-	
 
 	dir = Vector2Normalize(dir);
 
 	e->pos = Vector2Add(Vector2Scale(dir, current_speed * GetFrameTime()), e->pos);
+}
+
+static void draw_info_text(Vector2 *p, const char *text, int font_size, Color color) {
+    draw_text(GetFontDefault(), text, *p, font_size, color);
+    p->y += font_size + 2;
+}
+
+void show_entity_info(Entity *e) {
+	Vector2 p = v2(e->pos.x + e->radius*1.5, e->pos.y + e->radius*1.5);
+	DrawLineV(e->pos, p, WHITE);
+	draw_info_text(&p, arena_alloc_str(*e->temp_arena,
+				"pos: %.2f, %.2f",
+				e->pos.x, e->pos.y),
+			ENTITY_DEFAULT_RADIUS, WHITE);
 }

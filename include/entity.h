@@ -27,6 +27,7 @@ extern Entity_ids free_entity_ids;
 
 typedef enum {
     EK_NONE,
+	EK_PLAYER,
     EK_COUNT,
 } Entity_kind;
 
@@ -58,5 +59,6 @@ struct Entity {
 Entity make_entity(Entities *entities, Vector2 pos, float radius, Entity_kind kind, Arena *arena, Arena *temp_arena);
 void draw_entity(Entity *e);
 void control_entity(Entity *e, Control_config cc);
+void show_entity_info(Entity *e);
 
 #endif // _ENTITY_H_
