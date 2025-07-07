@@ -4,6 +4,8 @@
 #include <config.h>
 #include <common.h>
 
+#include <screen.h>
+
 #define COMMONLIB_REMOVE_PREFIX
 #define COMMONLIB_IMPLEMENTATION
 #include <commonlib.h>
@@ -38,7 +40,7 @@ int main(void) {
 		return 1;
 	}
 
-	Tile t = load_tile_from_sheet(tile_sheet, v2xx(0));
+	Screen scr = make_screen(&arena, &temp_arena);
 
 	while (!WindowShouldClose()) {
         BeginDrawing();
@@ -96,8 +98,9 @@ int main(void) {
 					}
 				}
 
-			draw_tile(&t);
 			EndMode2D();
+
+			draw_screen(&scr);
 
 			if (DEBUG_DRAW) {
 				Vector2 p = v2(10, 10);
@@ -107,6 +110,8 @@ int main(void) {
         draw_ren_tex(ren_tex, SCREEN_WIDTH, SCREEN_HEIGHT);
         EndDrawing();
 	}
+
+	free_screen(&scr);
 
 	close_window(ren_tex);
 	return 0;

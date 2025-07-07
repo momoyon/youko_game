@@ -51,6 +51,8 @@ void draw_tile(Tile *tile) {
 }
 
 void draw_tiles(Tiles *tiles) {
-	(void)tiles;
-
+	for (size_t i = 0; i < tiles->count; ++i) {
+		Tile *t = &tiles->items[i];
+		draw_tile(t);
+	}
 }
