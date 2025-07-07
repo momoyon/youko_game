@@ -30,16 +30,27 @@ Tile load_tile_from_sheet(Texture2D sheet, Vector2 id) {
 
 	Tile t = {
 		.tex = sheet,
-		.tex_rect = tex_rect
+		.tex_rect = tex_rect,
+		.size = v2xx(TILE_SIZE),
 	};
 
 	return t;
 }
 
 void draw_tile(Tile *tile) {
+// RLAPI void DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint); // Draw a part of a texture defined by a rectangle with 'pro' parameters
+
+	Rectangle dst = {
+		.x = tile->pos.x,
+		.y = tile->pos.y,
+		.width = tile->size.x,
+		.height = tile->size.y,
+	};
 	
+	DrawTexturePro(tile->tex, tile->tex_rect, dst, v2xx(0), 0, WHITE);
 }
 
 void draw_tiles(Tiles *tiles) {
+	(void)tiles;
 
 }

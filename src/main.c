@@ -1,5 +1,5 @@
-#define ENGINE_IMPLEMENTATION
-#include <engine.h>
+
+#include <tile.h>
 
 #include <config.h>
 #include <common.h>
@@ -10,6 +10,9 @@
 
 #define STB_DS_IMPLEMENTATION
 #include <stb_ds.h>
+
+#define ENGINE_IMPLEMENTATION
+#include <engine.h>
 
 int main(void) {
 	ren_tex = init_window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_SCALE, "Youko Game", &WIDTH, &HEIGHT);
@@ -29,6 +32,13 @@ int main(void) {
 
 	size_t p_id = add_entity(v2xx(0), EK_PLAYER, &arena, &temp_arena);
 	log_debug("Player id: %zu", p_id);
+
+	Texture2D tile_sheet = {0};
+	if (!load_texture(&tm, "resources/gfx/tile_sheet.png", &tile_sheet)) {
+		return 1;
+	}
+
+	Tile t = load_tile_from_sheet(tile_sheet, v2xx(0));
 
 	while (!WindowShouldClose()) {
         BeginDrawing();
@@ -85,6 +95,8 @@ int main(void) {
 						show_entity_info(e);
 					}
 				}
+
+			draw_tile(&t);
 			EndMode2D();
 
 			if (DEBUG_DRAW) {

@@ -7,6 +7,8 @@
 
 #include <stdbool.h>
 
+#include <engine.h>
+
 extern int SCREEN_HEIGHT;
 extern int SCREEN_WIDTH;
 extern float SCREEN_SCALE;
@@ -17,15 +19,16 @@ extern int WIDTH;
 extern bool DEBUG_DRAW;
 
 extern RenderTexture2D ren_tex;
+extern Texture_manager tm;
 extern Font font;
 extern Camera2D cam;
 extern State state;
 
 #define CAM_SPEED 100.f
 
-#define TILE_SIZE 16
+#define TILE_SIZE 32
 
-#define ENTITY_DEFAULT_RADIUS TILE_SIZE
+#define ENTITY_DEFAULT_RADIUS TILE_SIZE*0.5
 #define ENTITY_DEFAULT_SPEED  100.0f
 #define ENTITY_DEFAULT_RUN_SPEED (ENTITY_DEFAULT_SPEED * 1.5f)
 

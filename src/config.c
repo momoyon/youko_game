@@ -14,6 +14,7 @@ bool DEBUG_DRAW = false;
 #endif
 
 RenderTexture2D ren_tex = {0};
+Texture_manager tm = {0};
 Font font = {0};
 Camera2D cam = {
 	.zoom = 1.f,
