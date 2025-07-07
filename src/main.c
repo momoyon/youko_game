@@ -44,6 +44,8 @@ int main(void) {
 	Vector2 edit_cursor = {0};
 
 	while (!WindowShouldClose()) {
+		arena_reset(&temp_arena);
+
         BeginDrawing();
         Vector2 m = get_mpos_scaled(SCREEN_SCALE);
 		Vector2 m_world = GetScreenToWorld2D(m, cam);
@@ -125,7 +127,23 @@ int main(void) {
 			if (DEBUG_DRAW) {
 				Vector2 p = v2(10, 10);
 				draw_info_text(&p, state_as_str(state), ENTITY_DEFAULT_RADIUS, YELLOW);
+				draw_info_sep(&p, 2.f, 100, WHITE);
+
+				draw_info_text(&p, arena_alloc_str(temp_arena, "Cam %.2f, %.2f", cam.target.x, cam.target.y), ENTITY_DEFAULT_RADIUS, WHITE);
+
+				switch (state) {
+					case STATE_NORMAL: {
+					} break;
+					case STATE_TILE_EDIT: {
+						draw_info_sep(&p, 2.f, 100, WHITE);
+						draw_info_text(&p, arena_alloc_str(temp_arena, "Screen %zu", current_screen), ENTITY_DEFAULT_RADIUS, GRAY);
+					} break;
+					case STATE_COUNT:
+					default: ASSERT(false, "UNREACHABLE!");
+				}
 			}
+
+
         EndTextureMode();
         draw_ren_tex(ren_tex, SCREEN_WIDTH, SCREEN_HEIGHT);
         EndDrawing();

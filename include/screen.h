@@ -22,8 +22,6 @@ struct Screen {
 	Arena *arena;
 	Arena *temp_arena;
 
-	//
-	const char *screen_str;
 };
 
 

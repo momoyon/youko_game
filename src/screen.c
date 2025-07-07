@@ -15,15 +15,13 @@ Screen make_screen(Arena *arena, Arena *temp_arena) {
 
 	arr_heap_init(s.tiles, sizeof(Tile)*s.cols*s.rows);
 
-	s.screen_str = arena_alloc_str(*temp_arena, "Screen %zu", s.id);
-
 	return s;
 }
 
 void draw_screen(Screen *s) {
 	draw_tiles(&s->tiles);
 	if (DEBUG_DRAW) {
-		draw_text_aligned(GetFontDefault(), s->screen_str, v2(WIDTH*0.5, 0), ENTITY_DEFAULT_RADIUS, TEXT_ALIGN_V_TOP, TEXT_ALIGN_H_CENTER, WHITE);
+		draw_text_aligned(GetFontDefault(), arena_alloc_str(*s->temp_arena, "Screen %zu", s->id), v2(WIDTH*0.5, 0), ENTITY_DEFAULT_RADIUS, TEXT_ALIGN_V_TOP, TEXT_ALIGN_H_CENTER, WHITE);
 	}
 }
 

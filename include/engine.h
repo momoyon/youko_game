@@ -59,6 +59,7 @@ void draw_text_aligned(Font font, const char *text, Vector2 pos, int font_size, 
 void draw_text_aligned_ex(Font font, const char *text, Vector2 pos, int font_size, const Text_align_v align_v, const Text_align_h align_h, float rotation, Color color);
 void draw_text(Font font, const char *text, Vector2 pos, int font_size, Color color);
 void draw_info_text(Vector2 *p, const char *text, int font_size, Color color);
+void draw_info_sep(Vector2 *p, int thickness, float len, Color color);
 
 // Misc
 Vector2 get_mpos_scaled(float scl);
@@ -284,6 +285,14 @@ void draw_info_text(Vector2 *p, const char *text, int font_size, Color color) {
     p->y += font_size + 2;
 }
 
+void draw_info_sep(Vector2 *p, int thickness, float len, Color color) {
+	Vector2 end = {
+		.x = p->x + len,
+		.y = p->y
+	};
+	DrawLineEx(*p, end, thickness, color);
+	p->y += thickness + 2.f;
+}
 
 // Misc
 Vector2 get_mpos_scaled(float scl) {
