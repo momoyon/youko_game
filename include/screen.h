@@ -7,8 +7,15 @@
 #include <commonlib.h>
 
 extern int screen_id_counter;
+typedef struct Screen Screen;
 
 typedef struct {
+	Screen *items;
+	size_t count;
+	size_t capacity;
+} Screens; // @Darr
+
+struct Screen {
 	Tiles tiles;
 	size_t id;
 	int cols, rows;
@@ -17,7 +24,8 @@ typedef struct {
 
 	//
 	const char *screen_str;
-} Screen;
+};
+
 
 Screen make_screen(Arena *arena, Arena *temp_arena);
 void draw_screen(Screen *s);

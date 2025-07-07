@@ -5,6 +5,7 @@
 #include <common.h>
 
 #include <screen.h>
+#include <misc.h>
 
 #define COMMONLIB_REMOVE_PREFIX
 #define COMMONLIB_IMPLEMENTATION
@@ -40,7 +41,7 @@ int main(void) {
 		return 1;
 	}
 
-	Screen scr = make_screen(&arena, &temp_arena);
+	Vector2 edit_cursor = {0};
 
 	while (!WindowShouldClose()) {
         BeginDrawing();
@@ -79,11 +80,22 @@ int main(void) {
 			cam.target.y += CAM_SPEED * GetFrameTime();
 		}
 
+		// Update
 		for (size_t i = 0; i < entities.count; ++i) {
 			Entity *e = &entities.items[i];
 			if (e->id == p_id) {
 				control_entity(e, cc);
 			}
+		}
+
+		switch (state) {
+			case STATE_NORMAL: {
+			} break;
+			case STATE_TILE_EDIT: {
+				edit_cursor = snap_to_tile(m_world);
+			} break;
+			case STATE_COUNT:
+			default: ASSERT(false, "UNREACHABLE!");
 		}
 
 		// Draw
@@ -98,9 +110,17 @@ int main(void) {
 					}
 				}
 
-			EndMode2D();
+				switch (state) {
+					case STATE_NORMAL: {
+					} break;
+					case STATE_TILE_EDIT: {
+						DrawCircleV(edit_cursor, 4, RED);
+					} break;
+					case STATE_COUNT:
+					default: ASSERT(false, "UNREACHABLE!");
+				}
 
-			draw_screen(&scr);
+			EndMode2D();
 
 			if (DEBUG_DRAW) {
 				Vector2 p = v2(10, 10);
@@ -110,8 +130,6 @@ int main(void) {
         draw_ren_tex(ren_tex, SCREEN_WIDTH, SCREEN_HEIGHT);
         EndDrawing();
 	}
-
-	free_screen(&scr);
 
 	close_window(ren_tex);
 	return 0;

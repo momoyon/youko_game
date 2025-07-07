@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 #include <engine.h>
+#include <screen.h>
 
 extern int SCREEN_HEIGHT;
 extern int SCREEN_WIDTH;
@@ -33,6 +34,8 @@ extern State state;
 #define ENTITY_DEFAULT_RUN_SPEED (ENTITY_DEFAULT_SPEED * 1.5f)
 
 extern Entities entities;
+extern Screens screens;
+extern size_t current_screen;
 
 extern Arena arena;
 extern Arena temp_arena;

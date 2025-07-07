@@ -10,6 +10,9 @@ void init(void) {
 
 	arena = arena_make(32*1024);
 	temp_arena = arena_make(1*1024);
+
+	Screen scr = make_screen(&arena, &temp_arena);
+	darr_append(screens, scr);
 }
 
 size_t add_entity(Vector2 pos, Entity_kind kind, Arena *arena, Arena *temp_arena) {
