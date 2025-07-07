@@ -15,6 +15,9 @@ bool DEBUG_DRAW = false;
 
 RenderTexture2D ren_tex = {0};
 Font font = {0};
+Camera2D cam = {
+	.zoom = 1.f,
+};
 
 Entities entities = {0};
 

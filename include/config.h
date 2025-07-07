@@ -17,8 +17,15 @@ extern bool DEBUG_DRAW;
 
 extern RenderTexture2D ren_tex;
 extern Font font;
+extern Camera2D cam;
 
-#define ENTITY_DEFAULT_RADIUS 16
+#define CAM_SPEED 100.f
+
+#define TILE_SIZE 16
+
+#define ENTITY_DEFAULT_RADIUS TILE_SIZE
+#define ENTITY_DEFAULT_SPEED  100.0f
+#define ENTITY_DEFAULT_RUN_SPEED (ENTITY_DEFAULT_SPEED * 1.5f)
 
 extern Entities entities;
 

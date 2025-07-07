@@ -21,6 +21,13 @@ int main(void) {
 		exit(1);
 	}
 
+	Control_config cc = {
+		KEY_A, KEY_D, KEY_W, KEY_S,
+
+		.run = KEY_LEFT_SHIFT,
+	};
+
+	init();
 	while (!WindowShouldClose()) {
         BeginDrawing();
         Vector2 m = get_mpos_scaled(SCREEN_SCALE);
@@ -31,18 +38,34 @@ int main(void) {
 			add_entity(m, EK_NONE, &arena, &temp_arena);
 		}
 
+		// DEBUG: Move camera
+		if (IsKeyDown(KEY_J)) {
+			cam.target.x -= CAM_SPEED * GetFrameTime();
+		}
+		if (IsKeyDown(KEY_L)) {
+			cam.target.x += CAM_SPEED * GetFrameTime();
+		}
+		if (IsKeyDown(KEY_I)) {
+			cam.target.y -= CAM_SPEED * GetFrameTime();
+		}
+		if (IsKeyDown(KEY_K)) {
+			cam.target.y += CAM_SPEED * GetFrameTime();
+		}
+
 		for (size_t i = 0; i < entities.count; ++i) {
 			Entity *e = &entities.items[i];
-			(void)e;
+			if (i == 0) control_entity(e, cc);
 		}
 
 		// Draw
         BeginTextureMode(ren_tex);
-			for (size_t i = 0; i < entities.count; ++i) {
-				Entity *e = &entities.items[i];
-				draw_entity(e);
-			}
 			draw_text(font, "Hello Buddy", m, 18, WHITE);
+			BeginMode2D(cam);
+				for (size_t i = 0; i < entities.count; ++i) {
+					Entity *e = &entities.items[i];
+					draw_entity(e);
+				}
+			EndMode2D();
             ClearBackground(BLACK);
         EndTextureMode();
         draw_ren_tex(ren_tex, SCREEN_WIDTH, SCREEN_HEIGHT);

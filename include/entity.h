@@ -2,6 +2,7 @@
 #define _ENTITY_H_
 
 #include <raylib.h>
+#include <control_config.h>
 
 #define COMMONLIB_REMOVE_PREFIX
 #include <commonlib.h>
@@ -44,6 +45,8 @@ struct Entity {
     size_t id;
     int state;
 
+	float run_speed, speed;
+
     Texture2D tex;
 
     Arena *arena; // All entity-related allocations
@@ -54,5 +57,6 @@ struct Entity {
 
 Entity make_entity(Entities *entities, Vector2 pos, float radius, Entity_kind kind, Arena *arena, Arena *temp_arena);
 void draw_entity(Entity *e);
+void control_entity(Entity *e, Control_config cc);
 
 #endif // _ENTITY_H_

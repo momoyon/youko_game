@@ -1,6 +1,8 @@
 #include <entity.h>
 #include <config.h>
 
+#include <raymath.h>
+
 size_t entity_id_counter = 0;
 Entity_ids free_entity_ids = {0};
 
@@ -22,6 +24,8 @@ Entity make_entity(Entities *entities, Vector2 pos, float radius, Entity_kind ki
 		.kind = kind,
 		.id = get_unique_id(),
 		.state = 0,
+		.speed = ENTITY_DEFAULT_SPEED,
+		.run_speed = ENTITY_DEFAULT_RUN_SPEED,
 		.arena = arena,
 		.temp_arena = temp_arena,
 		.entities = entities,
@@ -48,4 +52,27 @@ void draw_entity(Entity *e) {
 	}
 
 	DrawCircleV(e->pos, e->radius, BLUE);
+}
+
+void control_entity(Entity *e, Control_config cc) {
+	Vector2 dir = {0};
+	if (IsKeyDown(cc.move_left)) {
+		dir.x--;
+	}
+	if (IsKeyDown(cc.move_right)) {
+		dir.x++;
+	}
+	if (IsKeyDown(cc.move_up)) {
+		dir.y--;
+	}
+	if (IsKeyDown(cc.move_down)) {
+		dir.y++;
+	}
+	
+	float current_speed = IsKeyDown(cc.run) ? e->run_speed : e->speed;
+	
+
+	dir = Vector2Normalize(dir);
+
+	e->pos = Vector2Add(Vector2Scale(dir, current_speed * GetFrameTime()), e->pos);
 }
