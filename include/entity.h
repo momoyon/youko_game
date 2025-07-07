@@ -53,5 +53,6 @@ struct Entity {
 };
 
 Entity make_entity(Entities *entities, Vector2 pos, float radius, Entity_kind kind, Arena *arena, Arena *temp_arena);
+void draw_entity(Entity *e);
 
 #endif // _ENTITY_H_

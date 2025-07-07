@@ -37,3 +37,15 @@ Entity make_entity(Entities *entities, Vector2 pos, float radius, Entity_kind ki
 
 	return e;
 }
+
+void draw_entity(Entity *e) {
+	switch (e->kind) {
+		case EK_NONE: {
+
+		} break;
+		case EK_COUNT:
+		default: ASSERT(false, "UNREACHABLE!");
+	}
+
+	DrawCircleV(e->pos, e->radius, BLUE);
+}

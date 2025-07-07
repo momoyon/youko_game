@@ -2,6 +2,7 @@
 #include <engine.h>
 
 #include <config.h>
+#include <common.h>
 
 #define COMMONLIB_REMOVE_PREFIX
 #define COMMONLIB_IMPLEMENTATION
@@ -26,6 +27,9 @@ int main(void) {
 		// Vector2 m_world = GetScreenToWorld2D(m, cam);
 
 		// Input
+		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+			add_entity(m, EK_NONE, &arena, &temp_arena);
+		}
 
 		for (size_t i = 0; i < entities.count; ++i) {
 			Entity *e = &entities.items[i];
@@ -34,6 +38,10 @@ int main(void) {
 
 		// Draw
         BeginTextureMode(ren_tex);
+			for (size_t i = 0; i < entities.count; ++i) {
+				Entity *e = &entities.items[i];
+				draw_entity(e);
+			}
 			draw_text(font, "Hello Buddy", m, 18, WHITE);
             ClearBackground(BLACK);
         EndTextureMode();
