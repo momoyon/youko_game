@@ -23,6 +23,7 @@ extern RenderTexture2D ren_tex;
 extern Texture_manager tm;
 extern Font font;
 extern Camera2D cam;
+extern float cam_zoom;
 extern State state;
 
 #define CAM_SPEED 100.f
@@ -32,6 +33,8 @@ extern State state;
 #define ENTITY_DEFAULT_RADIUS TILE_SIZE*0.5
 #define ENTITY_DEFAULT_SPEED  100.0f
 #define ENTITY_DEFAULT_RUN_SPEED (ENTITY_DEFAULT_SPEED * 1.5f)
+
+#define CAMERA_DEFAULT_ZOOM 1.5f
 
 extern Entities entities;
 extern Screens screens;

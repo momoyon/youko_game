@@ -19,6 +19,7 @@ Font font = {0};
 Camera2D cam = {
 	.zoom = 1.f,
 };
+float cam_zoom = 1.f;
 State state = STATE_NORMAL;
 
 Entities entities = {0};

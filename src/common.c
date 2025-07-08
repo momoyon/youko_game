@@ -6,7 +6,7 @@ void init(void) {
 		.x = (SCREEN_WIDTH*SCREEN_SCALE*0.5f),
 		.y = (SCREEN_HEIGHT*SCREEN_SCALE*0.5f),
 	};
-	cam.zoom = 1.f;
+	cam.zoom = CAMERA_DEFAULT_ZOOM;
 
 	arena = arena_make(32*1024);
 	temp_arena = arena_make(1*1024);

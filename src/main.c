@@ -46,6 +46,8 @@ int main(void) {
 	while (!WindowShouldClose()) {
 		arena_reset(&temp_arena);
 
+		cam.zoom += (cam_zoom - cam.zoom) * GetFrameTime() * 10.f;
+
         BeginDrawing();
         Vector2 m = get_mpos_scaled(SCREEN_SCALE);
 		Vector2 m_world = GetScreenToWorld2D(m, cam);
@@ -63,7 +65,15 @@ int main(void) {
 				state = (state + 1) % STATE_COUNT;
 			}
 		}
-
+		
+		cam_zoom = CAMERA_DEFAULT_ZOOM;
+		if (IsKeyDown(KEY_ONE)) {
+			cam_zoom = 1.f;
+		} if (IsKeyDown(KEY_TWO)) {
+			cam_zoom = 2.f;
+		}
+		
+		// Add entity
 		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
 			add_entity(m_world, EK_NONE, &arena, &temp_arena);
 		}
@@ -129,7 +139,7 @@ int main(void) {
 				draw_info_text(&p, state_as_str(state), ENTITY_DEFAULT_RADIUS, YELLOW);
 				draw_info_sep(&p, 2.f, 100, WHITE);
 
-				draw_info_text(&p, arena_alloc_str(temp_arena, "Cam %.2f, %.2f", cam.target.x, cam.target.y), ENTITY_DEFAULT_RADIUS, WHITE);
+				draw_info_text(&p, arena_alloc_str(temp_arena, "Cam %.2f, %.2f (%.2f)", cam.target.x, cam.target.y, cam_zoom), ENTITY_DEFAULT_RADIUS, WHITE);
 
 				switch (state) {
 					case STATE_NORMAL: {
