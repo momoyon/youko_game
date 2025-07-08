@@ -21,9 +21,7 @@ struct Screen {
 	int cols, rows;
 	Arena *arena;
 	Arena *temp_arena;
-
 };
-
 
 Screen make_screen(Arena *arena, Arena *temp_arena);
 void draw_screen(Screen *s);

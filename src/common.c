@@ -3,9 +3,14 @@
 
 void init(void) {
 	cam.offset = CLITERAL(Vector2) {
-		.x = (SCREEN_WIDTH*SCREEN_SCALE*0.5f),
-		.y = (SCREEN_HEIGHT*SCREEN_SCALE*0.5f),
+		.x = (WIDTH*0.5f),
+		.y = (HEIGHT*0.5f),
 	};
+	cam.target = CLITERAL(Vector2) {
+		.x = (WIDTH*0.5f),
+		.y = (HEIGHT*0.5f),
+	};
+
 	cam.zoom = CAMERA_DEFAULT_ZOOM;
 
 	arena = arena_make(32*1024);

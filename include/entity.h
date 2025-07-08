@@ -59,6 +59,7 @@ struct Entity {
 Entity make_entity(Entities *entities, Vector2 pos, float radius, Entity_kind kind, Arena *arena, Arena *temp_arena);
 void draw_entity(Entity *e);
 void control_entity(Entity *e, Control_config cc);
+void bound_entity_to(Entity *e, Rectangle bound);
 void show_entity_info(Entity *e);
 
 #endif // _ENTITY_H_

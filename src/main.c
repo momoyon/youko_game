@@ -97,6 +97,19 @@ int main(void) {
 			Entity *e = &entities.items[i];
 			if (e->id == p_id) {
 				control_entity(e, cc);
+				Rectangle r = {
+					.x = 0,
+					.y = 0,
+					.width = WIDTH,
+					.height = HEIGHT
+				};
+				Rectangle rw = {
+					.x = GetScreenToWorld2D(v2(0,0), cam).x,
+					.y = GetScreenToWorld2D(v2(0,0), cam).y,
+				};
+				rw.width  = GetScreenToWorld2D(v2(WIDTH, HEIGHT), cam).x - rw.x;
+				rw.height = GetScreenToWorld2D(v2(WIDTH, HEIGHT), cam).y - rw.y;
+				bound_entity_to(e, rw);
 			}
 		}
 

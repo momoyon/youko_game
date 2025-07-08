@@ -90,6 +90,17 @@ void control_entity(Entity *e, Control_config cc) {
 	e->pos = Vector2Add(Vector2Scale(dir, current_speed * GetFrameTime()), e->pos);
 }
 
+void bound_entity_to(Entity *e, Rectangle bound) {
+	if (e->pos.x < bound.x + e->radius)
+		e->pos.x = bound.x + e->radius;
+	if (e->pos.x > bound.x + bound.width - e->radius)
+		e->pos.x = bound.x + bound.width - e->radius;
+	if (e->pos.y < bound.y + e->radius)
+		e->pos.y = bound.y + e->radius;
+	if (e->pos.y > bound.y + bound.height - e->radius)
+		e->pos.y = bound.y + bound.height - e->radius;
+}
+
 void show_entity_info(Entity *e) {
 	Vector2 p = v2(e->pos.x + e->radius*1.5, e->pos.y + e->radius*1.5);
 	DrawLineV(e->pos, p, WHITE);
