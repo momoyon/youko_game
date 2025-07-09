@@ -1,6 +1,7 @@
 #ifndef _TILE_H_
 #define _TILE_H_
 
+#include <engine.h>
 #include <raylib.h>
 #include <raymath.h>
 
@@ -9,6 +10,7 @@ typedef struct {
 	Vector2 size;
 	Texture2D tex;
 	Rectangle tex_rect;
+	Vector2i id;
 } Tile;
 
 typedef struct {

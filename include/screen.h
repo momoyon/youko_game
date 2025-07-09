@@ -24,6 +24,7 @@ struct Screen {
 };
 
 Screen make_screen(Arena *arena, Arena *temp_arena);
+void set_tile_at(Screen *s, Vector2 cursor, Tile t);
 void draw_screen(Screen *s);
 void free_screen(Screen *s);
 

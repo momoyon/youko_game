@@ -18,6 +18,19 @@ Screen make_screen(Arena *arena, Arena *temp_arena) {
 	return s;
 }
 
+void set_tile_at(Screen *s, Vector2 cursor, Tile t) {
+	int x = cursor.x / TILE_SIZE;
+	int y = cursor.y / TILE_SIZE;
+
+	int idx = y * s->cols + x;
+	if (idx < 0 || idx > s->tiles.count-1) {
+		log_error("Index is outofbounds! %d !! 0 ~ %zu", idx, s->tiles.count-1);
+		exit(1);
+	}
+
+	s->tiles.items[idx] = t;
+}
+
 void draw_screen(Screen *s) {
 	draw_tiles(&s->tiles);
 	if (DEBUG_DRAW) {

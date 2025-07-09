@@ -36,12 +36,17 @@ int main(void) {
 	size_t p_id = add_entity(v2xx(0), EK_PLAYER, &arena, &temp_arena);
 	log_debug("Player id: %zu", p_id);
 
+	entities.items[0].pos.x = WIDTH*0.5;
+	entities.items[0].pos.y = HEIGHT*0.5;
+
 	Texture2D tile_sheet = {0};
 	if (!load_texture(&tm, "resources/gfx/tile_sheet.png", &tile_sheet)) {
 		return 1;
 	}
 
+	/// EDIT TILE VARS
 	Vector2 edit_cursor = {0};
+	Tile editing_tile = {0};
 
 	while (!WindowShouldClose()) {
 		arena_reset(&temp_arena);
@@ -53,7 +58,6 @@ int main(void) {
 		Vector2 m_world = GetScreenToWorld2D(m, cam);
 
 		// Input
-	
 		if (IsKeyPressed(KEY_TAB)) {
 			if (IsKeyDown(KEY_LEFT_SHIFT)) {
 				if (state == 0) {
@@ -92,17 +96,23 @@ int main(void) {
 			cam.target.y += CAM_SPEED * GetFrameTime();
 		}
 
+		switch (state) {
+			case STATE_NORMAL: {
+			} break;
+			case STATE_TILE_EDIT: {
+				// if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+				//
+				// }
+			} break;
+			case STATE_COUNT:
+			default: ASSERT(false, "UNREACHABLE!");
+		}
+
 		// Update
 		for (size_t i = 0; i < entities.count; ++i) {
 			Entity *e = &entities.items[i];
 			if (e->id == p_id) {
 				control_entity(e, cc);
-				Rectangle r = {
-					.x = 0,
-					.y = 0,
-					.width = WIDTH,
-					.height = HEIGHT
-				};
 				Rectangle rw = {
 					.x = GetScreenToWorld2D(v2(0,0), cam).x,
 					.y = GetScreenToWorld2D(v2(0,0), cam).y,
@@ -118,6 +128,18 @@ int main(void) {
 			} break;
 			case STATE_TILE_EDIT: {
 				edit_cursor = snap_to_tile(m_world);
+				if (IsKeyDown(KEY_Q)) {
+					Rectangle tile_sheet_rect = {
+						.x = WIDTH*0.5-tile_sheet.width*0.5,
+						.y = HEIGHT*0.5-tile_sheet.height*0.5,
+						.width = tile_sheet.width,
+						.height = tile_sheet.height,
+					};
+					if (rect_contains_point(tile_sheet_rect, m)) {
+						editing_tile.id.x = (m.x - tile_sheet_rect.x) / TILE_SIZE;
+						editing_tile.id.y = (m.y - tile_sheet_rect.y) / TILE_SIZE;
+					}
+				}
 			} break;
 			case STATE_COUNT:
 			default: ASSERT(false, "UNREACHABLE!");
@@ -139,7 +161,15 @@ int main(void) {
 					case STATE_NORMAL: {
 					} break;
 					case STATE_TILE_EDIT: {
-						DrawCircleV(edit_cursor, 4, RED);
+						Rectangle src = {
+							.x = editing_tile.id.x * TILE_SIZE,
+							.y = editing_tile.id.y * TILE_SIZE,
+							.width = TILE_SIZE,
+							.height = TILE_SIZE,
+						};
+
+						DrawTextureRec(tile_sheet, src, edit_cursor, WHITE);
+						// DrawCircleV(edit_cursor, 4, RED);
 					} break;
 					case STATE_COUNT:
 					default: ASSERT(false, "UNREACHABLE!");
@@ -160,10 +190,29 @@ int main(void) {
 					case STATE_TILE_EDIT: {
 						draw_info_sep(&p, 2.f, 100, WHITE);
 						draw_info_text(&p, arena_alloc_str(temp_arena, "Screen %zu", current_screen), ENTITY_DEFAULT_RADIUS, GRAY);
+						
+						draw_info_text(&p, arena_alloc_str(temp_arena, "Tile: %d,%d", (int)editing_tile.id.x, (int)editing_tile.id.y), ENTITY_DEFAULT_RADIUS, GRAY);
 					} break;
 					case STATE_COUNT:
 					default: ASSERT(false, "UNREACHABLE!");
 				}
+			}
+			// Non-debug non-camera
+			switch (state) {
+				case STATE_NORMAL: {
+				} break;
+				case STATE_TILE_EDIT: {
+					if (IsKeyDown(KEY_Q)) {
+						DrawRectangleV(v2xx(0), v2(WIDTH, HEIGHT), ColorAlpha(BLACK, 0.5f));
+						Vector2 tpos = v2(WIDTH*0.5 - tile_sheet.width*0.5, HEIGHT*0.5 - tile_sheet.height*0.5);
+						DrawTextureV(tile_sheet, tpos, WHITE);
+
+						// Draw border around selected tile
+						DrawRectangleLines(tpos.x + ((int)editing_tile.id.x * TILE_SIZE), tpos.y + ((int)editing_tile.id.y * TILE_SIZE), TILE_SIZE, TILE_SIZE, RED);
+					}
+				} break;
+				case STATE_COUNT:
+				default: ASSERT(false, "UNREACHABLE!");
 			}
 
 
