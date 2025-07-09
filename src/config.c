@@ -24,7 +24,7 @@ State state = STATE_NORMAL;
 
 Entities entities = {0};
 Screens screens = {0};
-size_t current_screen = 0;
+size_t current_screen_idx = 0;
 
 Arena arena = {0};
 Arena temp_arena = {0};

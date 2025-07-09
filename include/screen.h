@@ -23,8 +23,8 @@ struct Screen {
 	Arena *temp_arena;
 };
 
-Screen make_screen(Arena *arena, Arena *temp_arena);
-void set_tile_at(Screen *s, Vector2 cursor, Tile t);
+Screen make_screen(Arena *arena, Arena *temp_arena, Texture2D tile_sheet);
+void set_tile_at(Screen *s, Vector2 cursor, Vector2i tile_id);
 void draw_screen(Screen *s);
 void free_screen(Screen *s);
 

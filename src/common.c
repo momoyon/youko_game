@@ -1,7 +1,7 @@
 #include <common.h>
 #include <config.h>
 
-void init(void) {
+void init(Texture2D tile_sheet) {
 	cam.offset = CLITERAL(Vector2) {
 		.x = (WIDTH*0.5f),
 		.y = (HEIGHT*0.5f),
@@ -16,7 +16,7 @@ void init(void) {
 	arena = arena_make(32*1024);
 	temp_arena = arena_make(1*1024);
 
-	Screen scr = make_screen(&arena, &temp_arena);
+	Screen scr = make_screen(&arena, &temp_arena, tile_sheet);
 	darr_append(screens, scr);
 }
 

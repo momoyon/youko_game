@@ -19,7 +19,13 @@
 
 int main(void) {
 	ren_tex = init_window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_SCALE, "Youko Game", &WIDTH, &HEIGHT);
-	init();
+
+	Texture2D tile_sheet = {0};
+	if (!load_texture(&tm, "resources/gfx/tile_sheet.png", &tile_sheet)) {
+		return 1;
+	}
+
+	init(tile_sheet);
 
 	font = GetFontDefault();
 	if (!IsFontReady(font)) {
@@ -39,14 +45,10 @@ int main(void) {
 	entities.items[0].pos.x = WIDTH*0.5;
 	entities.items[0].pos.y = HEIGHT*0.5;
 
-	Texture2D tile_sheet = {0};
-	if (!load_texture(&tm, "resources/gfx/tile_sheet.png", &tile_sheet)) {
-		return 1;
-	}
 
 	/// EDIT TILE VARS
 	Vector2 edit_cursor = {0};
-	Tile editing_tile = {0};
+	Vector2i editing_tile_id = {0};
 
 	while (!WindowShouldClose()) {
 		arena_reset(&temp_arena);
@@ -77,11 +79,6 @@ int main(void) {
 			cam_zoom = 2.f;
 		}
 		
-		// Add entity
-		if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-			add_entity(m_world, EK_NONE, &arena, &temp_arena);
-		}
-
 		// DEBUG: Move camera
 		if (IsKeyDown(KEY_J)) {
 			cam.target.x -= CAM_SPEED * GetFrameTime();
@@ -98,11 +95,16 @@ int main(void) {
 
 		switch (state) {
 			case STATE_NORMAL: {
+				// Add entity
+				if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+					add_entity(m_world, EK_NONE, &arena, &temp_arena);
+				}
 			} break;
 			case STATE_TILE_EDIT: {
-				// if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-				//
-				// }
+				if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+					Screen *current_screen = &screens.items[current_screen_idx];
+					set_tile_at(current_screen, edit_cursor, editing_tile_id);
+				}
 			} break;
 			case STATE_COUNT:
 			default: ASSERT(false, "UNREACHABLE!");
@@ -136,8 +138,8 @@ int main(void) {
 						.height = tile_sheet.height,
 					};
 					if (rect_contains_point(tile_sheet_rect, m)) {
-						editing_tile.id.x = (m.x - tile_sheet_rect.x) / TILE_SIZE;
-						editing_tile.id.y = (m.y - tile_sheet_rect.y) / TILE_SIZE;
+						editing_tile_id.x = (m.x - tile_sheet_rect.x) / TILE_SIZE;
+						editing_tile_id.y = (m.y - tile_sheet_rect.y) / TILE_SIZE;
 					}
 				}
 			} break;
@@ -149,6 +151,9 @@ int main(void) {
         BeginTextureMode(ren_tex);
             ClearBackground(BLACK);
 			BeginMode2D(cam);
+				Screen *current_screen = &screens.items[current_screen_idx];
+				draw_screen(current_screen);
+
 				for (size_t i = 0; i < entities.count; ++i) {
 					Entity *e = &entities.items[i];
 					draw_entity(e);
@@ -162,13 +167,13 @@ int main(void) {
 					} break;
 					case STATE_TILE_EDIT: {
 						Rectangle src = {
-							.x = editing_tile.id.x * TILE_SIZE,
-							.y = editing_tile.id.y * TILE_SIZE,
+							.x = editing_tile_id.x * TILE_SIZE,
+							.y = editing_tile_id.y * TILE_SIZE,
 							.width = TILE_SIZE,
 							.height = TILE_SIZE,
 						};
 
-						DrawTextureRec(tile_sheet, src, edit_cursor, WHITE);
+						DrawTextureRec(tile_sheet, src, edit_cursor, ColorAlpha(WHITE, 0.5));
 						// DrawCircleV(edit_cursor, 4, RED);
 					} break;
 					case STATE_COUNT:
@@ -189,9 +194,9 @@ int main(void) {
 					} break;
 					case STATE_TILE_EDIT: {
 						draw_info_sep(&p, 2.f, 100, WHITE);
-						draw_info_text(&p, arena_alloc_str(temp_arena, "Screen %zu", current_screen), ENTITY_DEFAULT_RADIUS, GRAY);
+						draw_info_text(&p, arena_alloc_str(temp_arena, "Screen %zu", current_screen_idx), ENTITY_DEFAULT_RADIUS, GRAY);
 						
-						draw_info_text(&p, arena_alloc_str(temp_arena, "Tile: %d,%d", (int)editing_tile.id.x, (int)editing_tile.id.y), ENTITY_DEFAULT_RADIUS, GRAY);
+						draw_info_text(&p, arena_alloc_str(temp_arena, "Tile: %d,%d", (int)editing_tile_id.x, (int)editing_tile_id.y), ENTITY_DEFAULT_RADIUS, GRAY);
 					} break;
 					case STATE_COUNT:
 					default: ASSERT(false, "UNREACHABLE!");
@@ -208,7 +213,7 @@ int main(void) {
 						DrawTextureV(tile_sheet, tpos, WHITE);
 
 						// Draw border around selected tile
-						DrawRectangleLines(tpos.x + ((int)editing_tile.id.x * TILE_SIZE), tpos.y + ((int)editing_tile.id.y * TILE_SIZE), TILE_SIZE, TILE_SIZE, RED);
+						DrawRectangleLines(tpos.x + ((int)editing_tile_id.x * TILE_SIZE), tpos.y + ((int)editing_tile_id.y * TILE_SIZE), TILE_SIZE, TILE_SIZE, RED);
 					}
 				} break;
 				case STATE_COUNT:

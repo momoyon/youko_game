@@ -38,7 +38,7 @@ extern State state;
 
 extern Entities entities;
 extern Screens screens;
-extern size_t current_screen;
+extern size_t current_screen_idx;
 
 extern Arena arena;
 extern Arena temp_arena;

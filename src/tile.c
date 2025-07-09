@@ -40,14 +40,8 @@ Tile load_tile_from_sheet(Texture2D sheet, Vector2 id) {
 void draw_tile(Tile *tile) {
 // RLAPI void DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint); // Draw a part of a texture defined by a rectangle with 'pro' parameters
 
-	Rectangle dst = {
-		.x = tile->pos.x,
-		.y = tile->pos.y,
-		.width = tile->size.x,
-		.height = tile->size.y,
-	};
-	
-	DrawTexturePro(tile->tex, tile->tex_rect, dst, v2xx(0), 0, WHITE);
+	// log_debug("TexRect: %f %f [%f %f]", tile->tex_rect.x, tile->tex_rect.y, tile->tex_rect.width, tile->tex_rect.height);
+	DrawTextureRec(tile->tex, tile->tex_rect, tile->pos, WHITE);
 }
 
 void draw_tiles(Tiles *tiles) {
