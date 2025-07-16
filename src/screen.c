@@ -53,9 +53,6 @@ void set_tile_at(Screen *s, Vector2 cursor, Vector2i tile_id) {
 
 void draw_screen(Screen *s) {
 	draw_tiles(&s->tiles);
-	if (DEBUG_DRAW) {
-		draw_text_aligned(GetFontDefault(), arena_alloc_str(*s->temp_arena, "Screen %zu", s->id), v2(WIDTH*0.5, 0), ENTITY_DEFAULT_RADIUS, TEXT_ALIGN_V_TOP, TEXT_ALIGN_H_CENTER, WHITE);
-	}
 }
 
 void free_screen(Screen *s) {

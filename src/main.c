@@ -27,6 +27,8 @@ int main(void) {
 
 	init(tile_sheet);
 
+	Vector2 tile_sheet_pos = {0};
+
 	font = GetFontDefault();
 	if (!IsFontReady(font)) {
 		log_error("Failed to get default font?");
@@ -101,7 +103,7 @@ int main(void) {
 				}
 			} break;
 			case STATE_TILE_EDIT: {
-				if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+				if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
 					Screen *current_screen = &screens.items[current_screen_idx];
 					set_tile_at(current_screen, edit_cursor, editing_tile_id);
 				}
@@ -130,10 +132,13 @@ int main(void) {
 			} break;
 			case STATE_TILE_EDIT: {
 				edit_cursor = snap_to_tile(m_world);
+				if (IsKeyPressed(KEY_Q)) {
+					tile_sheet_pos = m;
+				}
 				if (IsKeyDown(KEY_Q)) {
 					Rectangle tile_sheet_rect = {
-						.x = WIDTH*0.5-tile_sheet.width*0.5,
-						.y = HEIGHT*0.5-tile_sheet.height*0.5,
+						.x = tile_sheet_pos.x-tile_sheet.width*0.5,
+						.y = tile_sheet_pos.y-tile_sheet.height*0.5,
 						.width = tile_sheet.width,
 						.height = tile_sheet.height,
 					};
@@ -197,6 +202,9 @@ int main(void) {
 						draw_info_text(&p, arena_alloc_str(temp_arena, "Screen %zu", current_screen_idx), ENTITY_DEFAULT_RADIUS, GRAY);
 						
 						draw_info_text(&p, arena_alloc_str(temp_arena, "Tile: %d,%d", (int)editing_tile_id.x, (int)editing_tile_id.y), ENTITY_DEFAULT_RADIUS, GRAY);
+
+					Screen *current_screen = &screens.items[current_screen_idx];
+					draw_text_aligned(GetFontDefault(), arena_alloc_str(*current_screen->temp_arena, "Screen %zu", current_screen->id), v2(WIDTH*0.5, 0), ENTITY_DEFAULT_RADIUS, TEXT_ALIGN_V_TOP, TEXT_ALIGN_H_CENTER, WHITE);
 					} break;
 					case STATE_COUNT:
 					default: ASSERT(false, "UNREACHABLE!");
@@ -209,7 +217,7 @@ int main(void) {
 				case STATE_TILE_EDIT: {
 					if (IsKeyDown(KEY_Q)) {
 						DrawRectangleV(v2xx(0), v2(WIDTH, HEIGHT), ColorAlpha(BLACK, 0.5f));
-						Vector2 tpos = v2(WIDTH*0.5 - tile_sheet.width*0.5, HEIGHT*0.5 - tile_sheet.height*0.5);
+						Vector2 tpos = v2(tile_sheet_pos.x - tile_sheet.width*0.5, tile_sheet_pos.y - tile_sheet.height*0.5);
 						DrawTextureV(tile_sheet, tpos, WHITE);
 
 						// Draw border around selected tile
