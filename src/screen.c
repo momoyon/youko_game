@@ -29,14 +29,29 @@ Screen make_screen(Arena *arena, Arena *temp_arena, Texture2D tile_sheet) {
 	return s;
 }
 
-void set_tile_at(Screen *s, Vector2 cursor, Vector2i tile_id) {
+bool remove_tile_at(Screen *s, Vector2 cursor) {
 	int x = cursor.x / TILE_SIZE;
 	int y = cursor.y / TILE_SIZE;
 
 	int idx = y * s->cols + x;
 	if (idx < 0 || idx > s->tiles.count-1) {
 		log_error("Index is outofbounds! %d !! 0 ~ %zu", idx, s->tiles.count-1);
-		exit(1);
+		return false;
+	}
+
+	Tile *tile = &s->tiles.items[idx];
+	tile->exists = false;
+	return true;
+}
+
+bool set_tile_at(Screen *s, Vector2 cursor, Vector2i tile_id, bool coll) {
+	int x = cursor.x / TILE_SIZE;
+	int y = cursor.y / TILE_SIZE;
+
+	int idx = y * s->cols + x;
+	if (idx < 0 || idx > s->tiles.count-1) {
+		log_error("Index is outofbounds! %d !! 0 ~ %zu", idx, s->tiles.count-1);
+		return false;
 	}
 
 	// log_debug("BRUH idx: %d: %d %d", idx, tile_id.x, tile_id.y);
@@ -47,8 +62,11 @@ void set_tile_at(Screen *s, Vector2 cursor, Vector2i tile_id) {
 		.width = TILE_SIZE,
 		.height = TILE_SIZE,
 	};
+	tile->coll = coll;
 	tile->size = CLITERAL(Vector2) { TILE_SIZE, TILE_SIZE };
+	tile->exists = true;
 	// log_debug("Set tile @ %f, %f | tex_rect: %f %f [%f %f]", tile->pos.x, tile->pos.y, tile->tex_rect.x, tile->tex_rect.y, tile->tex_rect.width, tile->tex_rect.height);
+	return true;
 }
 
 void draw_screen(Screen *s) {

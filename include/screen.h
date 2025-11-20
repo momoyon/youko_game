@@ -24,7 +24,8 @@ struct Screen {
 };
 
 Screen make_screen(Arena *arena, Arena *temp_arena, Texture2D tile_sheet);
-void set_tile_at(Screen *s, Vector2 cursor, Vector2i tile_id);
+bool remove_tile_at(Screen *s, Vector2 cursor);
+bool set_tile_at(Screen *s, Vector2 cursor, Vector2i tile_id, bool coll);
 void draw_screen(Screen *s);
 void free_screen(Screen *s);
 

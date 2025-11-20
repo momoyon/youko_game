@@ -11,6 +11,8 @@ typedef struct {
 	Texture2D tex;
 	Rectangle tex_rect;
 	Vector2i id;
+	bool exists;
+	bool coll;
 } Tile;
 
 typedef struct {

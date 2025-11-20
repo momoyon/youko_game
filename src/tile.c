@@ -41,7 +41,13 @@ void draw_tile(Tile *tile) {
 // RLAPI void DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint); // Draw a part of a texture defined by a rectangle with 'pro' parameters
 
 	// log_debug("TexRect: %f %f [%f %f]", tile->tex_rect.x, tile->tex_rect.y, tile->tex_rect.width, tile->tex_rect.height);
-	DrawTextureRec(tile->tex, tile->tex_rect, tile->pos, WHITE);
+	if (tile->exists) {
+		DrawTextureRec(tile->tex, tile->tex_rect, tile->pos, WHITE);
+		if (DEBUG_DRAW) {
+			if (tile->coll)
+				DrawRectangleV(tile->pos, tile->size, ColorAlpha(RED, 0.25f));
+		}
+	}
 }
 
 void draw_tiles(Tiles *tiles) {

@@ -19,6 +19,7 @@
 
 int main(void) {
 	ren_tex = init_window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_SCALE, "Youko Game", &WIDTH, &HEIGHT);
+	SetExitKey(0);
 
 	Texture2D tile_sheet = {0};
 	if (!load_texture(&tm, "resources/gfx/tile_sheet.png", &tile_sheet)) {
@@ -47,9 +48,9 @@ int main(void) {
 	entities.items[0].pos.x = WIDTH*0.5;
 	entities.items[0].pos.y = HEIGHT*0.5;
 
-
 	/// EDIT TILE VARS
 	Vector2 edit_cursor = {0};
+	bool edit_tile_coll = false;
 	Vector2i editing_tile_id = {0};
 
 	while (!WindowShouldClose()) {
@@ -105,7 +106,11 @@ int main(void) {
 			case STATE_TILE_EDIT: {
 				if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
 					Screen *current_screen = &screens.items[current_screen_idx];
-					set_tile_at(current_screen, edit_cursor, editing_tile_id);
+					set_tile_at(current_screen, edit_cursor, editing_tile_id, edit_tile_coll);
+				}
+				if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
+					Screen *current_screen = &screens.items[current_screen_idx];
+					remove_tile_at(current_screen, edit_cursor);
 				}
 			} break;
 			case STATE_COUNT:
@@ -127,6 +132,7 @@ int main(void) {
 			}
 		}
 
+		// State-specific Update
 		switch (state) {
 			case STATE_NORMAL: {
 			} break;
@@ -147,6 +153,7 @@ int main(void) {
 						editing_tile_id.y = (m.y - tile_sheet_rect.y) / TILE_SIZE;
 					}
 				}
+				edit_tile_coll = IsKeyDown(KEY_C);
 			} break;
 			case STATE_COUNT:
 			default: ASSERT(false, "UNREACHABLE!");
@@ -179,7 +186,7 @@ int main(void) {
 						};
 
 						DrawTextureRec(tile_sheet, src, edit_cursor, ColorAlpha(WHITE, 0.5));
-						// DrawCircleV(edit_cursor, 4, RED);
+						if (edit_tile_coll) DrawRectangleV(edit_cursor, v2(TILE_SIZE, TILE_SIZE), ColorAlpha(RED, 0.25f));
 					} break;
 					case STATE_COUNT:
 					default: ASSERT(false, "UNREACHABLE!");
@@ -201,7 +208,9 @@ int main(void) {
 						draw_info_sep(&p, 2.f, 100, WHITE);
 						draw_info_text(&p, arena_alloc_str(temp_arena, "Screen %zu", current_screen_idx), ENTITY_DEFAULT_RADIUS, GRAY);
 						
-						draw_info_text(&p, arena_alloc_str(temp_arena, "Tile: %d,%d", (int)editing_tile_id.x, (int)editing_tile_id.y), ENTITY_DEFAULT_RADIUS, GRAY);
+						draw_info_text(&p, arena_alloc_str(temp_arena, "Tile: %d,%d [%s]", 
+										 (int)editing_tile_id.x, (int)editing_tile_id.y,
+										 edit_tile_coll ? "c" : ""), ENTITY_DEFAULT_RADIUS, GRAY);
 
 					Screen *current_screen = &screens.items[current_screen_idx];
 					draw_text_aligned(GetFontDefault(), arena_alloc_str(*current_screen->temp_arena, "Screen %zu", current_screen->id), v2(WIDTH*0.5, 0), ENTITY_DEFAULT_RADIUS, TEXT_ALIGN_V_TOP, TEXT_ALIGN_H_CENTER, WHITE);
