@@ -39,6 +39,10 @@ typedef struct {
     size_t capacity;
 } Entities; // @Darr
 
+#define ENTITY_FLAG_SELECTED 0
+#define ENTITY_FLAG_HOVERING 1
+#define ENTITY_FLAG_DEAD     2
+
 struct Entity {
     Vector2 pos;
     float radius;
@@ -49,6 +53,8 @@ struct Entity {
 	float run_speed, speed;
 
     Texture2D tex;
+
+	uint64 flags;
 
     Arena *arena; // All entity-related allocations
     Arena *temp_arena;

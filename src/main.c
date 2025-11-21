@@ -17,6 +17,17 @@
 #define ENGINE_IMPLEMENTATION
 #include <engine.h>
 
+typedef struct {
+	Rectangle r;
+	Color c;
+} Rect;
+
+typedef struct {
+	Rect *items;
+	size_t count;
+	size_t capacity;
+} Rect_array;
+
 int main(void) {
 	ren_tex = init_window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_SCALE, "Youko Game", &WIDTH, &HEIGHT);
 	SetExitKey(0);
@@ -29,6 +40,8 @@ int main(void) {
 	init(tile_sheet);
 
 	Vector2 tile_sheet_pos = {0};
+
+	Rect_array recs = {0};
 
 	font = GetFontDefault();
 	if (!IsFontReady(font)) {
@@ -54,6 +67,7 @@ int main(void) {
 	Vector2i editing_tile_id = {0};
 
 	while (!WindowShouldClose()) {
+		recs.count = 0;
 		arena_reset(&temp_arena);
 
 		cam.zoom += (cam_zoom - cam.zoom) * GetFrameTime() * 10.f;
@@ -118,23 +132,48 @@ int main(void) {
 		}
 
 		// Update
-		for (size_t i = 0; i < entities.count; ++i) {
-			Entity *e = &entities.items[i];
-			if (e->id == p_id) {
-				control_entity(e, cc);
-				Rectangle rw = {
-					.x = GetScreenToWorld2D(v2(0,0), cam).x,
-					.y = GetScreenToWorld2D(v2(0,0), cam).y,
-				};
-				rw.width  = GetScreenToWorld2D(v2(WIDTH, HEIGHT), cam).x - rw.x;
-				rw.height = GetScreenToWorld2D(v2(WIDTH, HEIGHT), cam).y - rw.y;
-				bound_entity_to(e, rw);
-			}
-		}
-
 		// State-specific Update
 		switch (state) {
 			case STATE_NORMAL: {
+				for (size_t i = 0; i < entities.count; ++i) {
+					Entity *e = &entities.items[i];
+					if (GET_FLAG(e->flags, ENTITY_FLAG_DEAD)) continue;
+					if (e->id == p_id) {
+						control_entity(e, cc);
+						Rectangle rw = {
+							.x = GetScreenToWorld2D(v2(0,0), cam).x,
+							.y = GetScreenToWorld2D(v2(0,0), cam).y,
+						};
+						rw.width  = GetScreenToWorld2D(v2(WIDTH, HEIGHT), cam).x - rw.x;
+						rw.height = GetScreenToWorld2D(v2(WIDTH, HEIGHT), cam).y - rw.y;
+						bound_entity_to(e, rw);
+
+						Screen *current_screen = &screens.items[current_screen_idx];
+						for (int j = 0; j < current_screen->tiles.count; ++j) {
+							Tile *tile = &current_screen->tiles.items[j];
+							if (!tile->exists || !tile->coll) continue;
+							Rectangle p_rec = {
+								.x = e->pos.x,
+								.y = e->pos.y,
+								.width = e->radius,
+								.height = e->radius,
+							};
+
+							Rectangle other_rec = {
+								.x = tile->pos.x,
+								.y = tile->pos.y,
+								.width = tile->size.x,
+								.height = tile->size.y,
+							};
+
+
+							if (CheckCollisionCircleRec(e->pos, e->radius, other_rec)) {
+								// WIP
+							}
+						}
+					}
+				}
+
 			} break;
 			case STATE_TILE_EDIT: {
 				edit_cursor = snap_to_tile(m_world);
@@ -168,9 +207,16 @@ int main(void) {
 
 				for (size_t i = 0; i < entities.count; ++i) {
 					Entity *e = &entities.items[i];
+					if (GET_FLAG(e->flags, ENTITY_FLAG_DEAD)) continue;
 					draw_entity(e);
 					if (e->id == p_id) {
 						show_entity_info(e);
+					}
+				}
+				if (DEBUG_DRAW) {
+					for (int i = 0; i < recs.count; ++i) {
+						Rect r = recs.items[i];
+						DrawRectangleLinesEx(r.r, 1.f, r.c);
 					}
 				}
 
@@ -212,8 +258,8 @@ int main(void) {
 										 (int)editing_tile_id.x, (int)editing_tile_id.y,
 										 edit_tile_coll ? "c" : ""), ENTITY_DEFAULT_RADIUS, GRAY);
 
-					Screen *current_screen = &screens.items[current_screen_idx];
-					draw_text_aligned(GetFontDefault(), arena_alloc_str(*current_screen->temp_arena, "Screen %zu", current_screen->id), v2(WIDTH*0.5, 0), ENTITY_DEFAULT_RADIUS, TEXT_ALIGN_V_TOP, TEXT_ALIGN_H_CENTER, WHITE);
+						Screen *current_screen = &screens.items[current_screen_idx];
+						draw_text_aligned(GetFontDefault(), arena_alloc_str(*current_screen->temp_arena, "Screen %zu", current_screen->id), v2(WIDTH*0.5, 0), ENTITY_DEFAULT_RADIUS, TEXT_ALIGN_V_TOP, TEXT_ALIGN_H_CENTER, WHITE);
 					} break;
 					case STATE_COUNT:
 					default: ASSERT(false, "UNREACHABLE!");

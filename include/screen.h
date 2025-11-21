@@ -9,6 +9,8 @@
 extern int screen_id_counter;
 typedef struct Screen Screen;
 
+typedef struct Entity Entity;
+
 typedef struct {
 	Screen *items;
 	size_t count;

@@ -55,6 +55,7 @@
 #define Arena c_Arena
 #define arena_make c_arena_make
 #define arena_alloc c_arena_alloc
+#define arena_dealloc c_arena_dealloc
 #define arena_reset c_arena_reset
 #define arena_free c_arena_free
 #define arena_alloc_str c_arena_alloc_str
@@ -64,6 +65,7 @@
 #define clampf c_clampf
 #define randomi c_randomi
 #define randomf c_randomf
+#define mapf    c_mapf
 
 #define String_builder c_String_builder
 #define sb_append c_sb_append
@@ -106,9 +108,19 @@
 #define sv_is_hex_numbers c_sv_is_hex_numbers
 #define sv_equals c_sv_equals
 #define sv_get_part c_sv_get_part
+#define sv_lpop_arg c_sv_lpop_arg
 
+#define SET_FLAG C_SET_FLAG
+#define UNSET_FLAG C_UNSET_FLAG
+#define GET_FLAG C_GET_FLAG
 
 #endif // COMMONLIB_REMOVE_PREFIX
+
+// Bit-flags
+#define C_SET_FLAG(flags, bit_number)   ((flags) |= (1U << (bit_number)))
+#define C_UNSET_FLAG(flags, bit_number) ((flags) &= ~(1U << (bit_number)))
+#define C_GET_FLAG(flags, bit_number)   (((flags) >> (bit_number)) & 1U)
+
 
 // Memory allocation
 #ifndef C_MALLOC
@@ -149,6 +161,8 @@ typedef const char*  cstr;
 typedef const wchar* wstr;
 
 
+// Static variables
+
 // Macros
 #if defined(_MSC_VER) && !defined(__clang__) && !defined(__INTEL_COMPILER)
 #define C_ASSERT(condition, msg) do {\
@@ -174,11 +188,11 @@ typedef const wchar* wstr;
 //
 // Math
 //
-
 int   c_clampi(int v, int min, int max);
 float c_clampf(float v, float min, float max);
 float c_randomf(float from, float to);
 int   c_randomi(int from, int to);
+float c_mapf(float value, float from1, float to1, float from2, float to2);
 
 //
 // Struct pre-decls
@@ -201,7 +215,7 @@ typedef struct c_Arena c_Arena;
 // in the struct; So we recommend defining da structs manually like:
 // ```C
 // typedef struct {
-//    <item-type> items;
+//    <item-type> *items;
 //    size_t count;
 //    size_t capacity;
 //    [extra fields...];
@@ -390,21 +404,40 @@ void c_touch_file_if_doesnt_exist(cstr file);
 // c_Arena
 //
 
+typedef struct c_Mem_block c_Mem_block;
+typedef struct c_Mem_blocks c_Mem_blocks;
+
+struct c_Mem_block {
+    void *mem;
+    size_t size;
+};
+
+struct c_Mem_blocks {
+    c_Mem_block *items;
+    size_t count;
+    size_t capacity;
+}; // @darr
+
 #define ARENA_BUFF_INITIAL_SIZE (1024*4)
 
 struct c_Arena {
     void* buff;
     uint64 buff_size;
     void* ptr;
+
+    c_Mem_blocks alloced_blocks;
+    c_Mem_blocks free_blocks;
 };
 
 // pass size 0 to get ARENA_BUFF_INITIAL_SIZE
 c_Arena c_arena_make(size_t size);
 void* c_arena_alloc(c_Arena* a, size_t size);
+void c_arena_dealloc(c_Arena *a, void *mem);
 void c_arena_reset(c_Arena* a);
 void c_arena_free(c_Arena* a);
 
 // TODO: Do we embed stb_snprintf to use stbsp_snprintf?
+// TODO: This doesn't correctly work now that we use Mem_blocks
 #define c_arena_alloc_str(a, fmt, ...)    c_arena_alloc(&(a), sizeof(char)*snprintf((a).ptr, (int)((a).buff_size - ((uint8*)(a).ptr - (uint8*)(a).buff)), (fmt), __VA_ARGS__)+1)
 #define c_arena_alloc_wstr(a, fmt, ...) c_arena_alloc(&a, sizeof(char)*wprintf(a.ptr, a.buff_size - ((uint8*)a.ptr - (uint8*)a.buff), (fmt), __VA_ARGS__)+1)
 
@@ -463,6 +496,7 @@ bool c_sv_contains_char(c_String_view sv, char ch);
 bool c_sv_is_hex_numbers(c_String_view sv);
 bool c_sv_equals(c_String_view sv1, c_String_view sv2);
 c_String_view c_sv_get_part(c_String_view sv, int from, int to);
+bool c_sv_lpop_arg(c_String_view *sv, c_String_view *out);
 
 #endif /* _COMMONLIB_H_ */
 
@@ -474,6 +508,8 @@ c_String_view c_sv_get_part(c_String_view sv, int from, int to);
 #include <assert.h>
 
 // My things implementation:
+
+// Global variables
 
 //
 // Math
@@ -498,6 +534,14 @@ float c_randomf(float from, float to) {
 
 int c_randomi(int from, int to) {
 	return c_randomf((float)from, (float)to);
+}
+
+float c_mapf(float value, float from1, float to1, float from2, float to2) {
+    value /= (to1 - from1);
+    value *= (to2 - from2);
+    value += from2;
+
+    return value;
 }
 
 //
@@ -538,7 +582,6 @@ const char *c_read_file(const char* filename, int *file_size) {
     char* result = NULL;
 
     if (f == NULL){
-        // TODO: Replace every strerror with strerror_s
         c_log_error("'%s': %s", filename, strerror(errno));
         defer(NULL);
     }
@@ -626,18 +669,70 @@ void* c_arena_alloc(c_Arena* a, size_t size) {
     void* res = a->ptr;
     a->ptr = (uint8*)a->ptr + size;
 
-    size_t diff = (size_t)((uint8*)a->ptr - (uint8*)a->buff);
-    if (diff > a->buff_size) {
-        c_log_info("c_Arena resized from %zu to %zu", a->buff_size, a->buff_size*2);
-        a->buff_size *= 2;
-        a->buff = C_REALLOC(a->buff, a->buff_size);
-        a->ptr = (uint8*)a->buff + diff;
-        res = a->ptr;
-        a->ptr = (uint8*)a->ptr + size;
+    bool free_block_found = false;
+
+    // TODO: Check if there is a free block that can fit this
+    for (size_t i = 0; i < a->free_blocks.count; ++i) {
+        c_Mem_block free_block = a->free_blocks.items[i];
+
+        if (free_block.size >= size) {
+            res = free_block.mem;
+
+            size_t diff = free_block.size - size;
+
+            c_darr_delete(a->free_blocks, c_Mem_block, i);
+
+            if (diff > 0) {
+                c_Mem_block residue_block = {
+                    .mem = (uint8 *)free_block.mem + size,
+                    .size = diff,
+                };
+
+                c_darr_append(a->free_blocks, residue_block);
+            }
+
+            free_block_found = true;
+            break;
+        }
     }
-    /* C_ASSERT((size_t)((uint8*)a->ptr - (uint8*)a->buff) <= a->buff_size); */
+
+
+    if (!free_block_found) {
+        size_t diff = (size_t)((uint8*)a->ptr - (uint8*)a->buff);
+        if (diff > a->buff_size) {
+            c_log_info("c_Arena resized from %zu to %zu", a->buff_size, a->buff_size*2);
+            a->buff_size *= 2;
+            a->buff = C_REALLOC(a->buff, a->buff_size);
+            a->ptr = (uint8*)a->buff + diff;
+            res = a->ptr;
+            // TODO: Do we need to do this?
+            a->ptr = (uint8*)a->ptr + size;
+        }
+        /* C_ASSERT((size_t)((uint8*)a->ptr - (uint8*)a->buff) <= a->buff_size); */
+    }
+
+    c_Mem_block block = {
+        .mem = res,
+        .size = size,
+    };
+
+    c_darr_append(a->alloced_blocks, block);
 
     return res;
+}
+
+void c_arena_dealloc(c_Arena *a, void *mem) {
+    C_ASSERT(a->buff, "Bro pass an initialized arena!");
+
+    for (size_t i = 0; i < a->alloced_blocks.count; ++i) {
+        c_Mem_block block = a->alloced_blocks.items[i];
+
+        if (block.mem == mem) {
+            c_darr_append(a->free_blocks, block);
+            c_darr_delete(a->alloced_blocks, c_Mem_block, i);
+            return;
+        }
+    }
 }
 
 void c_arena_reset(c_Arena* a) {
@@ -962,4 +1057,53 @@ c_String_view c_sv_get_part(c_String_view sv, int from, int to) {
 
     return range;
 }
+
+bool c_sv_lpop_arg(c_String_view *sv, c_String_view *out) {
+    c_sv_trim(sv);
+    if (sv->count == 0) return false;
+
+    // If starts with a quote, consume until matching quote (allowing backslash escapes).
+    char start = sv->data[0];
+    if (start == '"' || start == '\'') {
+        // skip opening quote
+        sv->data++;
+        sv->count--;
+        const char *start_ptr = sv->data;
+        size_t out_count = 0;
+
+        while (sv->count > 0) {
+            char c = *sv->data;
+            if (c == '\\' && sv->count > 1) {
+                // skip backslash, take next char literally
+                sv->data++;
+                sv->count--;
+                sv->data++; sv->count--;
+                out_count += 1;
+                continue;
+            }
+            if (c == start) {
+                // closing quote found; advance past it and finish
+                sv->data++;
+                sv->count--;
+                break;
+            }
+            sv->data++;
+            sv->count--;
+            out_count++;
+        }
+
+        *out = (c_String_view){ .data = (char*)start_ptr, .count = out_count };
+        return true;
+    }
+
+    // Unquoted: pop until next space
+    const char *start_ptr = sv->data;
+    while (sv->count > 0 && *sv->data != ' ') {
+        sv->data++;
+        sv->count--;
+    }
+    *out = (c_String_view){ .data = (char*)start_ptr, .count = (size_t)(sv->data - start_ptr) };
+    return true;
+}
+
 #endif

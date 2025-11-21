@@ -30,7 +30,8 @@ bool v2i_equal(Vector2i a, Vector2i b);
 bool rect_contains_point(Rectangle r1, Vector2 p);
 bool rect_contains_rect(Rectangle r1, Rectangle r2);
 bool rect_intersects_rect(Rectangle r1, Rectangle r2);
-// bool rect_resolve_rect_collision(Rectangle* rect1, const Rectangle rect2);
+bool rect_resolve_rect_collision(Rectangle* rect1, const Rectangle rect2);
+int rect_resolve_circle_collision(Vector2 *circlePos, float radius, Rectangle rect)
 // void rect_get_3d_points(Rectangle rect, Vector3f* p0, Vector3f* p1, Vector3f* p2, Vector3f* p3);
 // void rect_get_points(Rectangle rect, Vector2* p0, Vector2* p1, Vector2* p2, Vector2* p3);
 
@@ -166,6 +167,74 @@ bool rect_resolve_rect_collision(Rectangle* rect1, const Rectangle rect2) {
     return true;
   }
   return false;
+}
+
+int rect_resolve_circle_collision(Vector2 *circlePos, float radius, Rectangle rect)
+{
+    /* Find closest point on rect to circle center */
+    float closestX = circlePos->x;
+    if (closestX < rect.x) closestX = rect.x;
+    else if (closestX > rect.x + rect.width) closestX = rect.x + rect.width;
+
+    float closestY = circlePos->y;
+    if (closestY < rect.y) closestY = rect.y;
+    else if (closestY > rect.y + rect.height) closestY = rect.y + rect.height;
+
+    /* Vector from closest point to circle center */
+    float dx = circlePos->x - closestX;
+    float dy = circlePos->y - closestY;
+    float distSq = dx*dx + dy*dy;
+
+    /* No collision if distance squared greater than radius squared */
+    if (distSq >= radius*radius || distSq == 0.0f)
+    {
+        /* Handle special case: circle center exactly on closest point (corner on center or center exactly on edge).
+           If center is inside rectangle (distSq == 0) we must push the circle out along the shortest axis.
+        */
+        if (distSq == 0.0f)
+        {
+            /* Determine if center is inside rect */
+            if (circlePos->x > rect.x && circlePos->x < rect.x + rect.width &&
+                circlePos->y > rect.y && circlePos->y < rect.y + rect.height)
+            {
+                /* Compute penetration depths to each side */
+                float leftPen  = circlePos->x - rect.x;
+                float rightPen = rect.x + rect.width - circlePos->x;
+                float topPen   = circlePos->y - rect.y;
+                float bottomPen= rect.y + rect.height - circlePos->y;
+
+                /* Find minimal penetration axis */
+                float minPen = leftPen;
+                int axis = 0; /* 0 = left, 1 = right, 2 = top, 3 = bottom */
+                if (rightPen < minPen) { minPen = rightPen; axis = 1; }
+                if (topPen < minPen) { minPen = topPen; axis = 2; }
+                if (bottomPen < minPen) { minPen = bottomPen; axis = 3; }
+
+                /* Push circle out along that axis so circle just touches rect edge */
+                switch(axis)
+                {
+                    case 0: circlePos->x = rect.x - radius; break;                 /* left */
+                    case 1: circlePos->x = rect.x + rect.width + radius; break;   /* right */
+                    case 2: circlePos->y = rect.y - radius; break;                /* top */
+                    case 3: circlePos->y = rect.y + rect.height + radius; break;  /* bottom */
+                }
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    /* Collision: compute distance and push circle out along separation vector */
+    float dist = sqrtf(distSq);
+    /* Normalized separation vector from rect to circle */
+    float nx = dx / dist;
+    float ny = dy / dist;
+    /* Amount to move circle so it's exactly radius away from closest point */
+    float penetration = radius - dist;
+    circlePos->x += nx * penetration;
+    circlePos->y += ny * penetration;
+
+    return 1;
 }
 
 // void rect_get_3d_points(Rectangle rect, Vector3f* p0, Vector3f* p1, Vector3f* p2, Vector3f* p3) {
